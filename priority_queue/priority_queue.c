@@ -2,7 +2,7 @@
  * @Author: Radon
  * @Date: 2022-08-15 16:01:30
  * @LastEditors: Radon
- * @LastEditTime: 2022-09-05 17:03:41
+ * @LastEditTime: 2022-09-05 17:16:53
  * @Description: Hi, say something
  */
 #include "priority_queue.h"
@@ -20,9 +20,9 @@ void swap(s32 *a, s32 *b) {
 }
 
 /**
- * @brief 初始化优先队列
+ * @brief 初始化堆
  *
- * @param ptr 指向优先队列的指针
+ * @param ptr 指向堆的指针
  */
 void init_pqueue(priority_queue *ptr) {
   ptr->size = 0;
@@ -31,9 +31,9 @@ void init_pqueue(priority_queue *ptr) {
 }
 
 /**
- * @brief 将元素添加到优先队列, 并进行调整
+ * @brief 将元素添加到堆, 并进行调整
  *
- * @param ptr 指向的优先队列
+ * @param ptr 指向的堆
  * @param value 添加的值
  */
 void push_to_pqueue(priority_queue *ptr, s32 value) {
