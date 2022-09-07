@@ -2,10 +2,49 @@
  * @Author: Radon
  * @Date: 2022-08-15 16:01:30
  * @LastEditors: Radon
- * @LastEditTime: 2022-09-05 17:16:53
+ * @LastEditTime: 2022-09-07 20:08:17
  * @Description: Hi, say something
  */
-#include "priority_queue.h"
+#include "../config.h"
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define true 1
+#define false 0
+#define element seed
+
+/* 存储种子信息的结构体 */
+
+typedef struct seed {
+  u8 *fname;
+  double distance;
+} seed;
+
+/* 最小堆 */
+
+typedef struct heap {
+  u64 size;                                               // 堆目前的大小
+  u64 max_size;                                           // 堆最大容量
+  element *arr;                                           // 数组
+  s8 (*fptr)(const element *const, const element *const); // 函数指针, 指向比较函数
+} heap, priority_queue;
+
+/**
+ * @brief 比较函数, a的距离大返回1, b的距离大返回-1, 相等返回0
+ *
+ * @param a
+ * @param b
+ * @return s8
+ */
+s8 mycmp(const seed *const a, const seed *const b) {
+  if (a->distance > b->distance)
+    return 1;
+  else if (a->distance == b->distance)
+    return 0;
+  return -1;
+}
 
 /**
  * @brief 交换a和b的值
@@ -13,8 +52,8 @@
  * @param a
  * @param b
  */
-void swap(s32 *a, s32 *b) {
-  s32 temp = *a;
+void swap(element *a, element *b) {
+  element temp = *a;
   *a = *b;
   *b = temp;
 }
@@ -27,7 +66,8 @@ void swap(s32 *a, s32 *b) {
 void init_pqueue(priority_queue *ptr) {
   ptr->size = 0;
   ptr->max_size = 1;
-  ptr->arr = (s32 *)malloc(sizeof(s32) * ptr->max_size);
+  ptr->arr = (element *)malloc(sizeof(element) * ptr->max_size);
+  ptr->fptr = &mycmp;
 }
 
 /**
@@ -36,7 +76,7 @@ void init_pqueue(priority_queue *ptr) {
  * @param ptr 指向的堆
  * @param value 添加的值
  */
-void push_to_pqueue(priority_queue *ptr, s32 value) {
+void push_to_pqueue(priority_queue *ptr, element *value) {
 
   /* 超出最大容量的话需要扩展 */
 
@@ -44,8 +84,8 @@ void push_to_pqueue(priority_queue *ptr, s32 value) {
 
     /* 申请一个容量为原先两倍的数组, 并把旧数组中的内容拷贝过去 */
 
-    s32 *new_arr = (s32 *)malloc(sizeof(s32) * (ptr->max_size << 1));
-    memcpy(new_arr, ptr->arr, sizeof(s32) * ptr->max_size);
+    element *new_arr = (element *)malloc(sizeof(element) * (ptr->max_size << 1));
+    memcpy(new_arr, ptr->arr, sizeof(element) * ptr->max_size);
 
     /* 旧数组没用了, free掉. 结构体的arr指向新数组的首地址 */
 
@@ -59,29 +99,29 @@ void push_to_pqueue(priority_queue *ptr, s32 value) {
 
   /* 将值插入堆中 */
 
-  ptr->arr[ptr->size++] = value;
+  ptr->arr[ptr->size++] = *value;
 
-  /* 调整堆 */
+  /* 调整堆, 如果插入的值比父母要小的话就交换 */
 
-  s32 now = ptr->size - 1;
-  while (now > 0 && ptr->arr[now] < ptr->arr[(now - 1) >> 1]) {
+  u64 now = ptr->size - 1;
+  while (now > 0 && ptr->fptr(&ptr->arr[now], &ptr->arr[(now - 1) >> 1]) < 0) {
     swap(&ptr->arr[now], &ptr->arr[(now - 1) >> 1]);
     now = (now - 1) >> 1;
   }
 }
 
 /**
- * @brief 获取堆顶元素, 若堆为空则返回-1
+ * @brief 获取堆顶元素, 若堆为空则返回NULL
  *
  * @param ptr 指向的堆
- * @return s32 堆顶元素
+ * @return element* 堆顶元素
  */
-s32 get_pqueue_front(priority_queue *ptr) {
+element *get_pqueue_front(priority_queue *ptr) {
   if (ptr->size <= 0) {
-    printf("Empty priority_queue ? Return -1.");
-    return -1;
+    printf("Empty priority_queue ? Return NULL.");
+    return NULL;
   }
-  return ptr->arr[0];
+  return &ptr->arr[0];
 }
 
 /**
@@ -105,12 +145,12 @@ void pop_from_pqueue(priority_queue *ptr) {
 
   /* 从堆顶开始调整堆 */
 
-  s32 now = 0;
+  u64 now = 0;
   while (true) {
 
     /* 获得左孩子和右孩子的下标 */
 
-    s32 left = (now << 1) + 1, right = (now << 1) + 2;
+    u64 left = (now << 1) + 1, right = (now << 1) + 2;
 
     /* 如果当前节点是叶子节点 */
 
@@ -120,7 +160,7 @@ void pop_from_pqueue(priority_queue *ptr) {
     /* 如果只有左孩子 */
 
     if (left < ptr->size && right >= ptr->size) {
-      if (ptr->arr[left] < ptr->arr[now])
+      if (ptr->fptr(&ptr->arr[left], &ptr->arr[now]) < 0)
         swap(&ptr->arr[now], &ptr->arr[left]);
       break;
     }
@@ -129,16 +169,62 @@ void pop_from_pqueue(priority_queue *ptr) {
 
     /* 若左右孩子都比自己大, break */
 
-    if (ptr->arr[left] >= ptr->arr[now] && ptr->arr[right] >= ptr->arr[now])
+    if (ptr->fptr(&ptr->arr[left], &ptr->arr[now]) >= 0 && ptr->fptr(&ptr->arr[right], &ptr->arr[now]) >= 0)
       break;
 
     /* 和更小的孩子交换value */
 
-    s32 next_loc = left;
-    if (ptr->arr[right] < ptr->arr[left])
+    u64 next_loc = left;
+    if (ptr->fptr(&ptr->arr[right], &ptr->arr[left]) < 0)
       next_loc = right;
 
     swap(&ptr->arr[now], &ptr->arr[next_loc]);
     now = next_loc;
   }
+}
+
+/********** Debug **********/
+
+#if 0
+
+void test_s32() {
+  s32 arr[5] = {5, 4, 3, 2, 1};
+
+  /* 目前是数小的元素在队首 (堆顶) */
+
+  priority_queue *pq = (priority_queue *)malloc(sizeof(priority_queue));
+  init_pqueue(pq);
+
+  for (s32 i = 0; i < 5; i++) {
+    push_to_pqueue(pq, arr + i);
+  }
+
+  for (s32 i = 0; i < 5; i++) {
+    pop_from_pqueue(pq);
+  }
+}
+
+#else
+
+void test_seed() {
+  seed s[5];
+  for (int i = 0; i < 5; i++) {
+    s[i].distance = 5 - i;
+    s[i].fname = NULL;
+  }
+
+  priority_queue *pq = (priority_queue *)malloc(sizeof(priority_queue));
+  init_pqueue(pq);
+
+  for (s32 i = 0; i < 5; i++)
+    push_to_pqueue(pq, &s[i]);
+  for (s32 i = 0; i < 5; i++)
+    pop_from_pqueue(pq);
+}
+
+#endif
+
+int main(int argc, char **argv) {
+  test_seed();
+  return 0;
 }
