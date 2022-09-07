@@ -2,34 +2,10 @@
  * @Author: Radon
  * @Date: 2022-08-15 16:01:30
  * @LastEditors: Radon
- * @LastEditTime: 2022-09-07 20:08:17
+ * @LastEditTime: 2022-09-07 20:23:19
  * @Description: Hi, say something
  */
-#include "../config.h"
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
-#define true 1
-#define false 0
-#define element seed
-
-/* 存储种子信息的结构体 */
-
-typedef struct seed {
-  u8 *fname;
-  double distance;
-} seed;
-
-/* 最小堆 */
-
-typedef struct heap {
-  u64 size;                                               // 堆目前的大小
-  u64 max_size;                                           // 堆最大容量
-  element *arr;                                           // 数组
-  s8 (*fptr)(const element *const, const element *const); // 函数指针, 指向比较函数
-} heap, priority_queue;
+#include "priority_queue.h"
 
 /**
  * @brief 比较函数, a的距离大返回1, b的距离大返回-1, 相等返回0
