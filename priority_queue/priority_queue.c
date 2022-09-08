@@ -2,7 +2,7 @@
  * @Author: Radon
  * @Date: 2022-08-15 16:01:30
  * @LastEditors: Radon
- * @LastEditTime: 2022-09-07 20:23:19
+ * @LastEditTime: 2022-09-08 19:31:51
  * @Description: Hi, say something
  */
 #include "priority_queue.h"
@@ -15,6 +15,13 @@
  * @return s8
  */
 s8 mycmp(const seed *const a, const seed *const b) {
+  if (fabs(a->distance - (-1.0)) < EPS && fabs(b->distance - (-1.0)) < EPS)
+    return 0;
+  if (fabs(a->distance - (-1.0)) < EPS)
+    return 1;
+  if (fabs(b->distance - (-1.0)) < EPS)
+    return -1;
+
   if (a->distance > b->distance)
     return 1;
   else if (a->distance == b->distance)
@@ -35,15 +42,17 @@ void swap(element *a, element *b) {
 }
 
 /**
- * @brief 初始化堆
+ * @brief 初始化一个堆, 并返回初始化后的堆
  *
- * @param ptr 指向堆的指针
+ * @return priority_queue* 指向的堆
  */
-void init_pqueue(priority_queue *ptr) {
+priority_queue *init_pqueue() {
+  priority_queue *ptr = (priority_queue *)malloc(sizeof(priority_queue));
   ptr->size = 0;
   ptr->max_size = 1;
   ptr->arr = (element *)malloc(sizeof(element) * ptr->max_size);
   ptr->fptr = &mycmp;
+  return ptr;
 }
 
 /**
@@ -168,8 +177,7 @@ void test_s32() {
 
   /* 目前是数小的元素在队首 (堆顶) */
 
-  priority_queue *pq = (priority_queue *)malloc(sizeof(priority_queue));
-  init_pqueue(pq);
+  priority_queue *pq = init_pqueue();
 
   for (s32 i = 0; i < 5; i++) {
     push_to_pqueue(pq, arr + i);
@@ -189,8 +197,7 @@ void test_seed() {
     s[i].fname = NULL;
   }
 
-  priority_queue *pq = (priority_queue *)malloc(sizeof(priority_queue));
-  init_pqueue(pq);
+  priority_queue *pq = init_pqueue();
 
   for (s32 i = 0; i < 5; i++)
     push_to_pqueue(pq, &s[i]);
@@ -200,7 +207,11 @@ void test_seed() {
 
 #endif
 
+#if 0
+
 int main(int argc, char **argv) {
   test_seed();
   return 0;
 }
+
+#endif

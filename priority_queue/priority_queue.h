@@ -2,7 +2,7 @@
  * @Author: Radon
  * @Date: 2022-09-07 20:21:06
  * @LastEditors: Radon
- * @LastEditTime: 2022-09-07 20:27:51
+ * @LastEditTime: 2022-09-08 18:51:32
  * @Description: Hi, say something
  */
 #ifndef _HAVE_PRIORITY_QUEUE_H
@@ -13,9 +13,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 
 #define true 1
 #define false 0
+#define EPS 1e-6
 #define element seed
 
 /* 存储种子信息的结构体 */
@@ -38,7 +40,7 @@ typedef struct heap {
 
 void swap(element *a, element *b);
 
-void init_pqueue(priority_queue *ptr);  // TODO: param带上比较函数?
+priority_queue* init_pqueue();  // TODO: param带上比较函数?
 
 void push_to_pqueue(priority_queue *ptr, element *value);
 
