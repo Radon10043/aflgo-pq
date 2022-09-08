@@ -15,4 +15,5 @@ as
 *.o
 
 .vscode/
+debug/
 *.out
